@@ -1,0 +1,14 @@
+''''''
+It’s a good idea to create a .gitignore file to exclude files and directories that don't need 
+to be tracked (e.g., temporary files, build files). 
+''''''
+
+# Ignore Python bytecode files
+*.pyc
+__pycache__/
+
+# Ignore virtual environment folders
+venv/
+
+# Ignore game log directory
+/games/
