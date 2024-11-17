@@ -8,8 +8,7 @@ from player_lookup import create_player_id_to_player_dictionary
 from game_monitor_utils import load_game_details, wait_until_game_start, fetch_play_by_play, get_number_of_api_calls
 
 # Track and log each play event
-def monitor_game(game_file, player_dict):
-    game_details = load_game_details(game_file)
+def monitor_game(game_file, player_dict, game_details):
     game_id = game_details['game_id']
     start_time = game_details['start_time']
     # Wait until game start time
@@ -89,7 +88,7 @@ if __name__ == '__main__':
     start_time = game_details['start_time']
     game_id = game_details['game_id']
     
-    print(f"Game Details: {game_details} TEST \n")
+    # print(f"Game Details: {game_details} TEST \n")
     
     # Fetch player dictionary
     player_dict = create_player_id_to_player_dictionary(game_id)
@@ -101,4 +100,4 @@ if __name__ == '__main__':
     wait_until_game_start(start_time)
     
     # Call your monitor_game 
-    monitor_game(args.game_file, player_dict)
+    monitor_game(args.game_file, player_dict, game_details)

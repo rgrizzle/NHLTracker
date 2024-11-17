@@ -31,8 +31,11 @@ def load_game_details(file_path):
                 game_details['home_team'] = line.split(':')[1].strip()
             elif line.startswith('Away Team:'):
                 game_details['away_team'] = line.split(':')[1].strip()
-
-    print(f'Loaded Game Details: {game_details}')
+            elif line.startswith('Play-by-Play API URL: '):
+                game_details['play_by_play_api_URL'] = line.split(':')[1].strip() + ":" + line.split(':')[2].strip()
+    print(f'Loaded Game Details: {game_details} \n')
+    print(f"{game_details['play_by_play_api_URL']} \n\n")
+    
     return game_details
 
 # Wait until the game start time before starting the monitor
@@ -65,3 +68,31 @@ def fetch_play_by_play(game_id):
         print(f"Failed to fetch play-by-play data for game ID {game_id}")
         print(f"Request URL: {url}")
         return None
+    
+# Log game event JSON to game file
+
+def log_json_to_game_file(game_file, play, player_dict):
+    with open(game_file, 'a') as file:
+        play_type = play.get("typeDescKey", "unknown")
+        time_in_period = play.get("timeInPeriod", "unknown")
+        period = play["periodDescriptor"].get("number", "unknown")
+        team_id = play["details"].get("eventOwnerTeamId", "unknown") if "details" in play else "unknown"
+        number_of_api_calls = get_number_of_api_calls()
+        
+        player_id = None
+        if "details" in play and "scoringPlayerId" in play["details"]:
+            player_id = play["details"]["scoringPlayerId"]
+        
+        if player_id and player_id in player_dict:
+            player_name = player_dict[player_id]["lastName"]["default"]
+        else:
+            player_name = "Unknown Player"
+
+        file.write(f"API Calls: {number_of_api_calls}")
+        file.write(f"Period: {period}, Time in Period: {time_in_period} ")
+        file.write(f"Event Type: {play_type} ")
+        file.write(f"Team ID: {team_id} ")
+        file.write(f"Player: {player_name} ")
+        file.write("Details:\n")
+        file.write(json.dumps(play, indent=2))  # Write the full play details in JSON format
+        file.write("\n\n")

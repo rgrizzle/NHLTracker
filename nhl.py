@@ -4,7 +4,7 @@ import os
 import subprocess
 
 # List of teams you're tracking (e.g., team names)
-tracked_teams = ['San Jose']  # Modify as needed
+tracked_teams = ['Edmonton']  # Modify as needed
 
 # Function to fetch the NHL schedule for a specific day
 def fetch_nhl_schedule(date):
@@ -25,6 +25,7 @@ def create_game_file(game_details):
     game_date = datetime.now().strftime("%Y-%m-%d")
     game_file = os.path.join(directory, f"{game_details['gameId']}_{game_details['away_team']['placeName']['default']}_at_{game_details['home_team']['placeName']['default']}_{game_date}.txt")
     game_monitor_script_path = r"D:\Projects\NHLTracker\game_monitor.py"
+    play_by_play_api_url = f"https://api-web.nhle.com/v1/gamecenter/{game_details['gameId']}/play-by-play"  
     
     # Check if the file already exists
     if os.path.exists(game_file):
@@ -40,6 +41,7 @@ def create_game_file(game_details):
         f.write(f"Start Time (UTC): {game_details['start_time']}\n")
         f.write(f"Date: {game_details['date']}\n")
         f.write(f"Game Id: {game_details['gameId']}\n")
+        f.write(f"Play-by-Play API URL: {play_by_play_api_url}\n" )
         f.write(f"\n")
     print(f"\n - Game file {game_file} created successfully. - \n")
     subprocess.Popen(["python3", game_monitor_script_path, game_file])
