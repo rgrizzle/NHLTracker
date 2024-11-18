@@ -4,7 +4,7 @@ import os
 import subprocess
 
 # List of teams you're tracking (e.g., team names)
-tracked_teams = ['Edmonton']  # Modify as needed
+tracked_teams = ['San Jose']  # Modify as needed
 
 # Function to fetch the NHL schedule for a specific day
 def fetch_nhl_schedule(date):

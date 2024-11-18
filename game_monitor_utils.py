@@ -1,4 +1,5 @@
 #game_monitor_utils.py
+import json
 import requests
 from datetime import datetime, timezone
 import time
@@ -43,18 +44,34 @@ def wait_until_game_start(start_time):
     while True:
         current_time = datetime.now(timezone.utc)  # Get current time as UTC-aware
         time_to_start = (start_time - current_time).total_seconds()
+        minutes_to_start = time_to_start / 60
+        hours_to_start = minutes_to_start  / 60
+        
+        #print(f"hours to start: {hours_to_start} \n")
+        #print(f"minutes to start: {minutes_to_start} \n")
         
         if time_to_start <= 0:
             break
 
-        if int(time_to_start) / 60 > 3600:  # Check if time to start is > 1 hour
-            hours_to_start = time_to_start / 60
-            print(f"Game starts in {int(hours_to_start)} hours. Waiting...")
-            time.sleep(3500)
-        else:
-            minutes_to_start = time_to_start / 60
+        if hours_to_start > 1 :  # Check if time to start is > 1 hour
+            
+            print(f"Game starts in {int(hours_to_start)} hour(s) and . Waiting...")
+            time.sleep(3500) # check in 60 minutes
+        elif int(minutes_to_start) > 30 :
             print(f"Game starts in {int(minutes_to_start)} minutes. Waiting...")
-            time.sleep(300)  # Check every 5 minutes
+            time.sleep(1800)  # Check in 30 minutes
+        elif int(minutes_to_start) > 15 :
+            print(f"Game starts in {int(minutes_to_start)} minutes. Waiting...")
+            time.sleep(900)
+        elif int(minutes_to_start) > 5 :
+            print(f"Game starts in {int(minutes_to_start)} minutes. Waiting...")
+            time.sleep(300)
+        elif int(minutes_to_start) > 1 :
+            print(f"Game starts in {int(minutes_to_start)} minutes. Waiting...")
+            time.sleep(30)
+        else :
+            print(f"Game Starts Soon...")
+            time.sleep(time_to_start)
 
 # Fetch play-by-play data for the game
 def fetch_play_by_play(game_id):
@@ -71,17 +88,17 @@ def fetch_play_by_play(game_id):
     
 # Log game event JSON to game file
 
-def log_json_to_game_file(game_file, play, player_dict):
+def log_json_to_game_file(game_file, event, player_dict):
     with open(game_file, 'a') as file:
-        play_type = play.get("typeDescKey", "unknown")
-        time_in_period = play.get("timeInPeriod", "unknown")
-        period = play["periodDescriptor"].get("number", "unknown")
-        team_id = play["details"].get("eventOwnerTeamId", "unknown") if "details" in play else "unknown"
+        event_type = event.get("typeDescKey", "unknown")
+        time_in_period = event.get("timeInPeriod", "unknown")
+        period = event["periodDescriptor"].get("number", "unknown")
+        team_id = event["details"].get("eventOwnerTeamId", "unknown") if "details" in event else "unknown"
         number_of_api_calls = get_number_of_api_calls()
         
         player_id = None
-        if "details" in play and "scoringPlayerId" in play["details"]:
-            player_id = play["details"]["scoringPlayerId"]
+        if "details" in event and "scoringPlayerId" in event["details"]:
+            player_id = event["details"]["scoringPlayerId"]
         
         if player_id and player_id in player_dict:
             player_name = player_dict[player_id]["lastName"]["default"]
@@ -90,9 +107,10 @@ def log_json_to_game_file(game_file, play, player_dict):
 
         file.write(f"API Calls: {number_of_api_calls}")
         file.write(f"Period: {period}, Time in Period: {time_in_period} ")
-        file.write(f"Event Type: {play_type} ")
+        file.write(f"Event Type: {event_type} ")
         file.write(f"Team ID: {team_id} ")
         file.write(f"Player: {player_name} ")
         file.write("Details:\n")
-        file.write(json.dumps(play, indent=2))  # Write the full play details in JSON format
+        file.write(json.dumps(event, indent=2))  # Write the full play details in JSON format
         file.write("\n\n")
+        

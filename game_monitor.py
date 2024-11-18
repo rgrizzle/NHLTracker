@@ -6,6 +6,7 @@ from datetime import datetime, timezone
 import argparse
 from player_lookup import create_player_id_to_player_dictionary
 from game_monitor_utils import load_game_details, wait_until_game_start, fetch_play_by_play, get_number_of_api_calls
+from game_event_handler import handle_game_events
 
 # Track and log each play event
 def monitor_game(game_file, player_dict, game_details):
@@ -14,7 +15,7 @@ def monitor_game(game_file, player_dict, game_details):
     # Wait until game start time
     current_time = datetime.now(timezone.utc)
     time_to_start = (start_time - current_time).total_seconds()
-    targetEvents = {"game-start", "game-end", "period-start", "period-end", "goal","penalty"}
+    target_events = {"game-start", "game-end", "period-start", "period-end", "goal","penalty"}
     
     if time_to_start > 0:
         print(f"Waiting {time_to_start} seconds until game start...")
@@ -23,35 +24,35 @@ def monitor_game(game_file, player_dict, game_details):
     print("Game started. Beginning to monitor events.\n")
     print(f"{game_details['away_team']} at {game_details['home_team']} \n")
     last_sort_order = -1  # Initialize to a value that doesn't exist in 'sortOrder'
-
-
+    handle_game_events(game_id, target_events)
+""""
     while True:
         data = fetch_play_by_play(game_id)
         if data and "plays" in data:
             # Filter new events based on 'sortOrder'
-            plays = data["plays"]
-            new_plays = [play for play in plays if play["sortOrder"] > last_sort_order]
+            events = data["plays"]
+            new_events = [event for event in events if event["sortOrder"] > last_sort_order]
             
-            if new_plays:
+            if new_events:
                 # Sort new plays by 'sortOrder' for sequential logging
-                new_plays.sort(key=lambda x: x["sortOrder"])
+                new_events.sort(key=lambda x: x["sortOrder"])
                 
                 # Log each new play to the file
-                for play in new_plays:
-                    play_type = play.get("typeDescKey", "unknown")
-                    if play_type in targetEvents:
-                        if play_type == "game-end":
-                            log_play_event(game_file, play, player_dict)
+                for event in new_events:
+                    event_type = event.get("typeDescKey", "unknown")
+                    if event_type in targetEvents:
+                        if event_type == "game-end":
+                            log_play_event(game_file, event, player_dict)
                             print("Game ended. Stopping event log.\n")
                             total_number_of_api_calls = get_number_of_api_calls()
                             print(f"Total Number of API Calls: {total_number_of_api_calls}" )
                             return None
                         else:
-                            log_play_event(game_file, play, player_dict)
-                            last_sort_order = play["sortOrder"]
+                            log_play_event(game_file, event, player_dict)
+                            last_sort_order = event["sortOrder"]
 
         time.sleep(10)  # Poll every 10 seconds
-
+"""
 # Log individual play events to the game file
 def log_play_event(game_file, play, player_dict):
     with open(game_file, 'a') as file:
