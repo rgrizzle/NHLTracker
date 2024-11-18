@@ -4,7 +4,7 @@ import os
 import subprocess
 
 # List of teams you're tracking (e.g., team names)
-tracked_teams = ['San Jose']  # Modify as needed
+tracked_teams = ['Seattle']  # Modify as needed
 
 # Function to fetch the NHL schedule for a specific day
 def fetch_nhl_schedule(date):
@@ -54,7 +54,7 @@ def check_and_create_game_files():
     yesterday = today - timedelta(days=1)
     
     # Select target date, today or yesterday
-    target_date = yesterday
+    target_date = today
     
     # convert target date to string
     target_date_string = target_date.strftime(('%Y-%m-%d'))
